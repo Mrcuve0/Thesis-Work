@@ -1,0 +1,10 @@
+[Trace Management]
+tracefile0 = AES_SBOX_100traces_data/traces/config_2021.03.31-19.42.16_0.cfg
+enabled0 = True
+[ChipWhisperer]
+[[General Settings]]
+Project Name = Untitled
+Project File Version = 1.00
+Project Author = Unknown
+Program Name = ChipWhisperer
+Program Version = ""
