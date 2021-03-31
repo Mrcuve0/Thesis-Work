@@ -1,0 +1,15 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: capture.py",
+            "type": "python",
+            "request": "launch",
+            "program": "/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/00-Notes/Thesis-Work/capture.py",
+            "console": "integratedTerminal"
+        }
+    ]
+}
