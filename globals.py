@@ -44,6 +44,7 @@ cw_scope_adc_samples = 5000
 #  |_|    |_|  \_\\____/ \____/|______\_____|  |_|   
 #                                                    
 #                                                    
+proj_export_absolute_path = "/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/00-Notes/Thesis-Work/zip-projects/"
 
 num_bits = 8
 num_keys = pow(2, num_bits)
@@ -55,24 +56,6 @@ class ThesisProject(IntEnum):
     FREYRE_SBOX_1 = 1
     FREYRE_SBOX_2 = 2
     FREYRE_SBOX_3 = 3
-
-
-sbox_selected = ThesisProject.FREYRE_SBOX_3
-
-if (sbox_selected == ThesisProject.AES_SBOX):
-    proj_name = "AES_SBOX_"+str(num_traces)+"traces"
-elif (sbox_selected == ThesisProject.FREYRE_SBOX_1):
-    proj_name = "Freyre_SBOX_1_"+str(num_traces)+"traces"
-elif (sbox_selected == ThesisProject.FREYRE_SBOX_2):
-    proj_name = "Freyre_SBOX_2_"+str(num_traces)+"traces"
-elif (sbox_selected == ThesisProject.FREYRE_SBOX_3):
-    proj_name = "Freyre_SBOX_3_"+str(num_traces)+"traces"
-else:
-    pass
-
-proj_export_absolute_path = "/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/00-Notes/Thesis-Work/zip-projects/"
-
-
 
 # sample_GLOBAL_range_min = 0
 # sample_GLOBAL_range_max = cw_scope_adc_samples
@@ -91,9 +74,9 @@ def print_globals_config():
     print(f"\t --> num_bits:\t{num_bits}")
     print(f"\t --> num_bytes:\t{num_bytes}")
     print(f"\t --> num_keys:\t{num_keys}")
-    print(f"\t --> num_traces:\t{num_traces}")
-    print(f"\t --> Sbox:\t{sbox_selected}")
-    print(f"\t --> Ongoing Project:\t{proj_name}")
+    print(f"\t --> num_traces:{num_traces}")
+    # print(f"\t --> Sbox:\t{sbox_selected}")
+    # print(f"\t --> Ongoing Project:\t{proj_name}")
     # print(f"\t --> leak_position:\t{leak_position}")
     # print(f"\t --> sample_GLOBAL_range_min:\t{sample_GLOBAL_range_min}")
     # print(f"\t --> sample_GLOBAL_range_max:\t{sample_GLOBAL_range_max}")

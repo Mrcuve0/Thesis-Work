@@ -1,16 +1,19 @@
-from tqdm.cli import main
 import globals
 import CW_init
 import sboxes
 
 import random
 import time
+
 import chipwhisperer as cw
+import chipwhisperer.analyzer as cwa
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 from datetime import datetime
 from tqdm import trange
+from tqdm.cli import main
 from pathlib import Path
 from globals import ThesisProject
 
@@ -24,10 +27,22 @@ from globals import ThesisProject
 #                          
 #                          
 
+# class AES128_sbox_freyre_1(cwa.AESLeakageHelper):
+#     name = 'HW: AES Freyre1 SBox Output, First Round (Enc)'
+#     def leakage(self, pt, ct, key, bnum):
+#         return self.sbox_freyre_1((pt[bnum] ^ key[bnum]))
+    
+# class AES128_sbox_freyre_2(cwa.AESLeakageHelper):
+#     name = 'HW: AES Freyre2 SBox Output, First Round (Enc)'
+#     def leakage(self, pt, ct, key, bnum):
+#         return self.sbox_freyre_2((pt[bnum] ^ key[bnum]))
+    
+# class AES128_sbox_freyre_3(cwa.AESLeakageHelper):
+#     name = 'HW: AES Freyre3 SBox Output, First Round (Enc)'
+#     def leakage(self, pt, ct, key, bnum):
+#         return self.sbox_freyre_3((pt[bnum] ^ key[bnum]))
 
 def CW_capture(proj_name, scope, target):
-
-    # global secret_key
 
     ktp = cw.ktp.Basic()
     trace_array = []
@@ -48,7 +63,7 @@ def CW_capture(proj_name, scope, target):
             continue
         proj.traces.append(trace)
 
-    proj.export(globals.proj_export_absolute_path+'/'+globals.proj_name)
+    proj.export(globals.proj_export_absolute_path+'/'+proj_name)
     proj.save()
 
 
@@ -74,29 +89,57 @@ def print_time_results(script_time, capture_time) -> None:
 #                               
 
 if __name__ == "__main__":
-
     script_begin_time = datetime.now()
 
-    # Print Globals configuration
-    globals.print_globals_config()
-
-    # Init ChipWhisperer
     (scope, target, prog) = CW_init.cw_init()
-    CW_init.compile_target()
-    CW_init.program_target(scope, prog)
 
-    # Capture traces
-    capture_begin_time = time.time()
-    CW_capture(globals.proj_name, scope, target)
-    capture_end_time = time.time()
-    capture_time = capture_end_time - capture_begin_time
+    for sbox_num in ThesisProject:
+        if (sbox_num == ThesisProject.AES_SBOX):
+            proj_name = "AES_SBOX_"+str(globals.num_traces)+"traces"
+            leak_model = cwa.leakage_models.sbox_output
 
+        elif (sbox_num == ThesisProject.FREYRE_SBOX_1):
+            proj_name = "Freyre_SBOX_1_"+str(globals.num_traces)+"traces"
+            leak_model = cwa.leakage_models.sbox_freyre_1
+
+        elif (sbox_num == ThesisProject.FREYRE_SBOX_2):
+            proj_name = "Freyre_SBOX_2_"+str(globals.num_traces)+"traces"
+            leak_model = cwa.leakage_models.sbox_freyre_2
+
+        elif (sbox_num == ThesisProject.FREYRE_SBOX_3):
+            proj_name = "Freyre_SBOX_3_"+str(globals.num_traces)+"traces"
+            leak_model = cwa.leakage_models.sbox_freyre_3
+
+        else:
+            pass
+
+        # Print Globals configuration
+        print(f"🟢 Starting testing SBOX #{sbox_num.value} | Project: {proj_name}🟢\n")
+        globals.print_globals_config()
+
+        # Compile and Program
+        CW_init.compile_target(sbox_num.value)
+        CW_init.program_target(scope, prog)
+
+        # Capture traces
+        capture_time = -1
+        if (globals.enable_capture is True):
+            capture_begin_time = time.time()
+            CW_capture(proj_name, scope, target)
+            CW_init.disconnect(scope, target)
+            capture_end_time = time.time()
+            capture_time = capture_end_time - capture_begin_time
+        else:
+            current_project = cw.open_project(proj_name)
+
+        # Analyze Traces
+        attack = cwa.cpa(current_project, leak_model)
+        results = attack.run()
+        stat_data = results.find_maximums()
+        df = pd.DataFrame(stat_data).transpose()
 
     script_end_time = datetime.now()
-
-
-### END
-    CW_init.disconnect(scope, target)
+    ### END
     print_time_results(script_end_time-script_begin_time, capture_time)
 
 
