@@ -71,7 +71,7 @@ def compile_target(sbox_num) -> None:
     """Program the CW target code"""
 
     try:
-        res = subprocess.call("make SBOX=SBOX_SEL=" + str(sbox_num) + " PLATFORM=" + str(globals.cw_platform) + " CRYPTO_TARGET=" + str(globals.cw_cryptotarget) + " -C \""+str(globals.cw_target_fw_absolute_path)+"\"", shell=True)
+        res = subprocess.call("make SBOX_SEL=SBOX_SEL=" + str(sbox_num) + " PLATFORM=" + str(globals.cw_platform) + " CRYPTO_TARGET=" + str(globals.cw_cryptotarget) + " -C \""+str(globals.cw_target_fw_absolute_path)+"\"", shell=True)
         print(res)
     except subprocess.CalledProcessError as e:
         return_code = e.returncode
