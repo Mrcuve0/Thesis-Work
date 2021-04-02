@@ -1,3 +1,4 @@
+from typing import List
 from chipwhisperer.common.api.ProjectFormat import Project
 import globals
 import CW_init
@@ -43,14 +44,8 @@ from globals import ThesisProject
 #         return self.sbox_freyre_3((pt[bnum] ^ key[bnum]))
 
 def CW_capture(proj_name, scope, target) -> Project:
-
+    """Creates a project, captures for a specified number of traces, saves them in the project"""
     ktp = cw.ktp.Basic()
-
-    # Let's create a key/text pair
-    # key, text = ktp.next()
-    # secret_key = key
-    # The key is sent to the target and will be kept fixed from now on
-    # target.simpleserial_write('k', key)
 
     current_project = cw.create_project(f"{proj_absolute_path}{proj_name}", overwrite=True)
 
@@ -72,7 +67,8 @@ def CW_capture(proj_name, scope, target) -> Project:
 
 # Definition of the formatter, .format() accepts a callable argument, called with the value of a individual cell
 # "stat" is a single cell: each cell is a triple (key_guess, corr_position, corr)
-def format_stat(stat):
+def format_stat(stat) -> str:
+    """Formats row by row the content of the cells: the bytes are expressed in hex, the correlation position is discarded"""
     # Let's avoid once again the effects of the PGE row
     if type(stat) is int:
         return str(stat)
@@ -81,8 +77,8 @@ def format_stat(stat):
 
 
 # .apply() applies a function column-wise, row-wise or table-wise
-# Given a row, we apply the red color to all those cells that contain the correct key guess
-def color_corr_key(row):
+def color_corr_key(row) -> list:
+    """Given a row, we apply the red color to all those cells that contain the correct key guess"""
     global key
     ret = [""] * 16
     # Let's avoid the effects of the PGE row
@@ -95,8 +91,8 @@ def color_corr_key(row):
     return ret
 
 
-def stats_callback():
-
+def stats_callback() -> None:
+    """Callback function, called each num_callback_traces to plot intermediate results"""
     global callback_trace_current_num
     global key
 
@@ -145,6 +141,29 @@ def stats_callback():
     callback_trace_current_num += globals.num_callback_traces
 
 
+def plot_pge(plot_data) -> None:
+    """Plots the PGE trends for all the 16 correct key guesses"""
+    global key
+
+    pges = [plot_data.pge_vs_trace(i) for i,_ in enumerate(key)]
+
+    fig, ax1 = plt.subplots(nrows=1, ncols=1, sharex=True, figsize=[14,10])
+    plt.grid(b=True, which='major', axis='both', alpha=0.2)
+    
+    for i, bnum in enumerate(key):
+        plt.plot(pges[i][0], pges[i][1], label=f"Byte #{i} | Key: 0x{bnum:02X}")
+        
+    plt.legend(title=f"Key Bytes")
+    plt.title(f"{proj_name} - PGE")
+
+    ax1.set_ylabel('Partial Guessing Entropy (PGE)')
+    ax1.set_xlabel('Traces')
+
+    # plt.show()
+    plt.savefig(f"{plots_absolute_path}/PGE.png")
+
+
+
 def print_time_results(script_time, capture_time) -> None:
     print(f"\n")
     print(f"🔵 [INFO] Printing the execution times")
@@ -170,7 +189,11 @@ if __name__ == "__main__":
 
     script_begin_time = datetime.now()
 
-    (scope, target, prog) = CW_init.cw_init()
+    if (globals.enable_capture is True):
+        # Connect and Init ChipWhisperer
+        (scope, target, prog) = CW_init.cw_init()
+    else:
+        pass
 
     for sbox_num in ThesisProject:
         if (sbox_num == ThesisProject.AES_SBOX):
@@ -193,6 +216,16 @@ if __name__ == "__main__":
             # +str(globals.num_traces)
             leak_model = cwa.leakage_models.sbox_freyre_3
 
+        elif (sbox_num == ThesisProject.HUSSAIN_SBOX_6):
+            proj_name = "Hussain_SBOX_6"
+            # +str(globals.num_traces)
+            leak_model = cwa.leakage_models.sbox_hussain_6
+
+        elif (sbox_num == ThesisProject.OZKAYNAK_SBOX_1):
+            proj_name = "Ozkaynak_SBOX_1"
+            # +str(globals.num_traces)
+            leak_model = cwa.leakage_models.sbox_ozkaynak_1
+
         else:
             pass
 
@@ -202,6 +235,7 @@ if __name__ == "__main__":
         dataframe_absolute_path =   f"/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/00-Notes/Thesis-Work/projects/traces_{globals.num_traces}/{proj_name}/dataframes/"
         csv_absolute_path =         f"/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/00-Notes/Thesis-Work/projects/traces_{globals.num_traces}/{proj_name}/csv/"
         latex_absolute_path =       f"/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/00-Notes/Thesis-Work/projects/traces_{globals.num_traces}/{proj_name}/latex/"
+        plots_absolute_path =       f"/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/00-Notes/Thesis-Work/projects/traces_{globals.num_traces}/{proj_name}/plots/"
         p = Path(f"{proj_absolute_path}")
         p.mkdir(parents=True, exist_ok=True)
         p = Path(f"{proj_zip_absolute_path}")
@@ -212,19 +246,22 @@ if __name__ == "__main__":
         p.mkdir(parents=True, exist_ok=True)
         p = Path(f"{latex_absolute_path}")
         p.mkdir(parents=True, exist_ok=True)
+        p = Path(f"{plots_absolute_path}")
+        p.mkdir(parents=True, exist_ok=True)
 
 
         # Print Globals configuration
-        print(f"🟢 Starting testing SBOX #{sbox_num.value} | Project: {proj_name}🟢\n")
+        print(f"\n🟢 Starting testing SBOX #{sbox_num.value} | Project: {proj_name}🟢\n")
         globals.print_globals_config()
 
         # Capture traces
         capture_time = -1
         if (globals.enable_capture is True):
+            
             # Compile and Program
             CW_init.compile_target(sbox_num.value)
             CW_init.program_target(scope, prog)
-
+            # Launch Trace Capture
             capture_start_time = time.time()
             current_project = CW_capture(proj_name, scope, target)
             capture_end_time = time.time()
@@ -235,21 +272,29 @@ if __name__ == "__main__":
         if (globals.enable_analysis is True):
             # Retrieve the reference secret key
             key = current_project.keys[0]
-
             # Analyze Traces
             attack = cwa.cpa(current_project, leak_model)
-
+            # Correlation Power Analysis
             attack_start_time = time.time()
             callback_trace_current_num = globals.num_callback_traces
             results = attack.run(stats_callback, globals.num_callback_traces)
             attack_end_time = time.time()
             attack_time = attack_end_time - attack_start_time
+
+            plot_data = cwa.analyzer_plots(results)
+            plot_pge(plot_data)
+
         else:
             pass
 
 
     # end for
-    CW_init.disconnect(scope, target)
+    
+    if (globals.enable_capture is True):
+        CW_init.disconnect(scope, target)
+    else:
+        pass
+
     script_end_time = datetime.now()
     ### END
     print_time_results(script_end_time-script_begin_time, capture_time)
