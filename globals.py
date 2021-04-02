@@ -2,6 +2,19 @@ import random
 from enum import IntEnum
 from random import sample
 
+#    _____ ____  _   _ ______ _____ _____ 
+#   / ____/ __ \| \ | |  ____|_   _/ ____|
+#  | |   | |  | |  \| | |__    | || |  __ 
+#  | |   | |  | | . ` |  __|   | || | |_ |
+#  | |___| |__| | |\  | |     _| || |__| |
+#   \_____\____/|_| \_|_|    |_____\_____|
+#                                         
+#                                         
+
+enable_capture = True
+enable_autosave = True
+enable_analysis = False
+
 #    _______          __
 #   / ____\ \        / /
 #  | |     \ \  /\  / / 
@@ -13,10 +26,10 @@ from random import sample
 
 cw_platform = "CWLITEXMEGA"
 cw_cryptotarget = "AVRCRYPTOLIB"
+cw_scope_adc_samples = 5000
 
 cw_target_fw_absolute_path = "/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/ChipWhisperer_Projects/chipwhisperer/hardware/victims/firmware/simpleserial-aes/"
 cw_target_fw_hex = f"simpleserial-aes-{cw_platform}.hex"
-cw_scope_adc_samples = 5000
 
 #            ______  _____ 
 #      /\   |  ____|/ ____|
@@ -44,12 +57,13 @@ cw_scope_adc_samples = 5000
 #  |_|    |_|  \_\\____/ \____/|______\_____|  |_|   
 #                                                    
 #                                                    
-proj_export_absolute_path = "/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/00-Notes/Thesis-Work/zip-projects/"
 
 num_bits = 8
 num_keys = pow(2, num_bits)
 num_bytes = 16
 num_traces = 100
+num_callback_traces = 10
+
 
 class ThesisProject(IntEnum):
     AES_SBOX = 0
@@ -75,6 +89,7 @@ def print_globals_config():
     print(f"\t --> num_bytes:\t{num_bytes}")
     print(f"\t --> num_keys:\t{num_keys}")
     print(f"\t --> num_traces:{num_traces}")
+    print(f"\t --> num_callback_traces:{num_callback_traces}")
     # print(f"\t --> Sbox:\t{sbox_selected}")
     # print(f"\t --> Ongoing Project:\t{proj_name}")
     # print(f"\t --> leak_position:\t{leak_position}")
