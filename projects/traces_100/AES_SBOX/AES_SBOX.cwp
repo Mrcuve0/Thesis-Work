@@ -1,5 +1,5 @@
 [Trace Management]
-tracefile0 = AES_SBOX_data/traces/config_2021.04.02-15.30.54_0.cfg
+tracefile0 = AES_SBOX_data/traces/config_2021.04.02-22.58.48_0.cfg
 enabled0 = True
 [ChipWhisperer]
 [[General Settings]]

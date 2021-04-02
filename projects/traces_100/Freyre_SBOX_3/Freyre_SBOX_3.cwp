@@ -1,5 +1,5 @@
 [Trace Management]
-tracefile0 = Freyre_SBOX_3_data/traces/config_2021.04.02-15.31.08_0.cfg
+tracefile0 = Freyre_SBOX_3_data/traces/config_2021.04.02-22.59.51_0.cfg
 enabled0 = True
 [ChipWhisperer]
 [[General Settings]]
