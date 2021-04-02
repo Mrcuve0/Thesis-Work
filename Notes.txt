@@ -1,0 +1,119 @@
+2021-04-01 --> Note per la tesi: 
+
+* La chiave viene sempre mantenuta la stessa durante tutta la fase di cattura?
+    Sì
+
+    > import chipwhisperer as cw > ktp = cw.ktp.Basic() > key, text = ktp.next()
+
+    È sottointeso che la chiave sia fissa, di default, anche se si richiama il metodo .next() più
+    volte: Occorre controllare che il parametro sia settato nel seguente modo, di default lo è:
+
+    > ktp.fixed_key()
+        True
+
+* Come avviene la cattura se si utizza un project?
+
+    Un progetto è un modo per salvare tutte le tracce raccolte, sistemate in una collezione di
+    files. È utile per catturare in un primo momento e analizzare in un secondo.
+
+    È possibile esportare e importare progessi come .zip files. È anche possibile salvarli in modo
+    classico, ma saranno file sciolti e non compressi.
+
+    Esempio di una sessione di cattura:
+
+        > import chipwhisperer as cw > proj = cw.create_project("project_name") > trace =
+        cw.Trace(trace_data, plaintext, ciphertext, key) > proj.traces.append(trace) > proj.save()
+
+        la variabile "trace" contiene un oggetto di tipo Trace, così composto:
+
+        > class Trace(wave, textin, textout, key)
+
+            * wave è un array di numpy e contiene tutti i sample acquisiti (di default 5000 samples)
+            * textin è il plaintext * textout è il ciphertext * key è la chiave utilizzata per
+            questa traccia
+
+    Di cosa è composto un oggetto project?
+
+        > project.location
+            Il path che punta alla directory dove salviamo il progetto
+        > project.waves
+            È un iterable, un vettore di numpy array contenente tutte le waveforms catturate
+        > project.textins
+            È un iterable, un vettore di bytearray contenenti tutti i plaintext
+        > project.textouts
+            È un iterable, un vettore di bytearray contenenti tutti i ciphertext
+        > project.keys
+            È un iterable, un vettore di bytearray contenenti tutte le chiavi utilizzate (di solito
+            la chiave è solo una)
+        > project.get_filename
+            Ritorna il filename associato al progetto
+        > project.trace_manager
+            Ritorna il trace manager del progetto
+        > project.save
+            Salva il progetto, I filename delle tracce sono impostati con questo metodo
+            (internamente, immagino, non ci sono parametri da passare)
+        > project.export
+            Esporta il progetto come un singolo file .zip
+
+        La classe Trace:
+            * Supporta l'indexing, lo slicing ecc, possiamo aggiungre tracce alla raccolta usando il
+            metodo .append()
+            
+                > for trace in my_traces: >    my_project.traces.append(trace)
+
+            * Possiamo iterare in ogni trace raccolta (ricorda che un oggetto "trace" raccoglie
+            anche PT, CT, waves e chiavi)
+
+                > for trace in my_project.traces: >    print(trace.wave, trace.textin,
+                trace.textout, trace.key)
+
+            * Per esempio:
+
+                > trace_of_interest = my_project.traces[99]
+
+                    Qui andiamo a prendere la 99esima traccia, ma in trace_of_interest troveremo la
+                    wave, il relativo PT e CT, così come la chiave
+
+            * Slicing:
+
+                > interesting_traces = my_project.traces[20:35]
+            
+
+* Andiamo a vedere ora cosa succede con l'analyzer:
+
+    L'analyzer ci fornisce tutti gli strumenti per l'analisi offline dei dati che abbiamo raccolto
+    precedentemente e magari salvato in un project.
+
+    Possiamo per esempio ritornare l'oggetto "cpa" che contiene una buona maggioranza dei leakage_model utili e degli algoritmi più utili.
+
+    Per avere una lista dei leakage_models utilizzati si può fare:
+
+        > import chipwhisperer.analyzer as cwa
+        > print(cwa.leakage_models)
+
+* Come si conduce un attacco CPA?
+
+    > import chipwhisperer.analyzer as cwa
+    > import chipwhisperer as cw
+    > proj = cw.open_project('/path/to/project')
+    > attack = cwa.cpa(proj, cwa.leakage_models.sbox_output)
+    > results = attack.run()
+    > print(results)
+
+        Una volta aperto un progetto è possibile impostare un attacco lanciando la classe CPA: possiamo specificare il progetto su cui operare (all'interno di esso troveremo tutte le Trace necessarie). Possiamo poi specificare il leakage model utilizzato.
+        L'algorithm è "progressive" di default, significa che ogni 25 tracce possiamo lanciare una funzione di callback che possa riportarci i risultati ottenuti fino a quel momento.
+        Possiamo poi anche specificare il trace range e il sample range che vogliamo analizzare.
+        Possiamo poi specificare anche le subkey sotto attacco.
+
+    Se facciamo cpa.run l'algoritmo viene lanciato e ci ritornerà un oggetto di tipo Results.
+
+        > .best_guesses() 
+            ci ritorna le best key guess trovate con la loro correlazione e relativo progetto
+        > .find_maximums()
+            ci ritorna una lista con 16 elementi, uno per ogni subkey. Ogni elemento è una lista composta da 256 possible guesses, già ordinati in base alla correlazione più forte. Ognuno di questi elementi è una tripla con il valore del key guess, il suo valore di correlazione e la sua posizione.
+            Per esempio:
+
+                > print(attack_results.find_maximums()[4][0][2])
+
+                    Per la quarta subkey, per il primo key guess, ritorna la posizione della relativa correlazione
+
