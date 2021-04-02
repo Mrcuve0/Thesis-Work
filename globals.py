@@ -11,9 +11,9 @@ from random import sample
 #                                         
 #                                         
 
-enable_capture = True
-enable_autosave = True
-enable_analysis = False
+enable_capture = False
+enable_autosave = False
+enable_analysis = True
 
 #    _______          __
 #   / ____\ \        / /
@@ -63,6 +63,7 @@ num_keys = pow(2, num_bits)
 num_bytes = 16
 num_traces = 100
 num_callback_traces = 10
+num_df_head = 10
 
 
 class ThesisProject(IntEnum):

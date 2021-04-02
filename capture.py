@@ -73,7 +73,11 @@ def CW_capture(proj_name, scope, target) -> Project:
 # Definition of the formatter, .format() accepts a callable argument, called with the value of a individual cell
 # "stat" is a single cell: each cell is a triple (key_guess, corr_position, corr)
 def format_stat(stat):
-    return str("{:02X}<br>{:.3f}".format(stat[0], stat[2]))
+    # Let's avoid once again the effects of the PGE row
+    if type(stat) is int:
+        return str(stat)
+    else:
+        return str("{:02X}<br>{:.3f}".format(stat[0], stat[2]))
 
 
 # .apply() applies a function column-wise, row-wise or table-wise
@@ -81,11 +85,13 @@ def format_stat(stat):
 def color_corr_key(row):
     global key
     ret = [""] * 16
-    for i,bnum in enumerate(row):
-        if bnum[0] == key[i]:
-            ret[i] = "color: red"
-        else:
-            ret[i] = ""
+    # Let's avoid the effects of the PGE row
+    if (row.name != 'PGE='):
+        for i,bnum in enumerate(row):
+            if bnum[0] == key[i]:
+                ret[i] = "color: red"
+            else:
+                ret[i] = ""
     return ret
 
 
@@ -111,9 +117,10 @@ def stats_callback():
     #Add PGE row
     df_pge = pd.DataFrame(results.pge).transpose().rename(index={0:"PGE="}, columns=int)
     df = pd.concat([df_pge, df], ignore_index=False)
+
     
     # Display the dataFrame using a certain layout, define the color used to represent the real key bytes
-    df_styled = df.head(10).style.format(format_stat).apply(color_corr_key, axis=1).set_caption(f"Finished traces {callback_trace_current_num} to {globals.num_traces}")
+    df_styled = df.head(globals.num_df_head).style.format(format_stat).apply(color_corr_key, axis=1).set_caption(f"Finished traces {callback_trace_current_num} to {globals.num_traces}")
     df_styled = df_styled.set_table_styles([
         {'selector': 'tbody tr:nth-child(even)',
             'props': [("background-color", '#fff')]},
@@ -122,15 +129,18 @@ def stats_callback():
         {'selector': 'td',
             'props': [("padding", '.8em')]},
         {'selector': 'th',
-            'props': [("font-size", '100%'), ("text-align", "center")]},
+            'props': [("font-size", 'globals.num_df_head0%'), ("text-align", "center")]},
         {'selector': 'thead',
             'props': [("border-bottom", "1px solid black"), ("vertical-align", "bottom")]},
         {'selector': ' ',
             'props': [("margin", '0'),("font-family",'"Helvetica", "Arial", sans-serif'), ("border-collapse", "collapse"), ("border","none"), ("text-align", "right")]}
     ])
 
-    with open(f"{proj_absolute_path}/dataframe_traces[{callback_trace_current_num} of {globals.num_traces}].html", 'w') as f:
+    # Save Files
+    with open(f"{dataframe_absolute_path}/dataframe_traces[{callback_trace_current_num} of {globals.num_traces}].html", 'w') as f:
         f.write(df_styled.render())
+    df.head(globals.num_df_head).to_latex(f"{latex_absolute_path}/table_traces[{callback_trace_current_num} of {globals.num_traces}]");
+    df.head(globals.num_df_head).to_csv(f"{csv_absolute_path}/csv_traces[{callback_trace_current_num} of {globals.num_traces}]");
 
     callback_trace_current_num += globals.num_callback_traces
 
@@ -190,11 +200,17 @@ if __name__ == "__main__":
         proj_absolute_path =        f"/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/00-Notes/Thesis-Work/projects/traces_{globals.num_traces}/{proj_name}/"
         proj_zip_absolute_path =    f"/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/00-Notes/Thesis-Work/projects/traces_{globals.num_traces}/{proj_name}/zips/"
         dataframe_absolute_path =   f"/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/00-Notes/Thesis-Work/projects/traces_{globals.num_traces}/{proj_name}/dataframes/"
+        csv_absolute_path =         f"/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/00-Notes/Thesis-Work/projects/traces_{globals.num_traces}/{proj_name}/csv/"
+        latex_absolute_path =       f"/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/00-Notes/Thesis-Work/projects/traces_{globals.num_traces}/{proj_name}/latex/"
         p = Path(f"{proj_absolute_path}")
         p.mkdir(parents=True, exist_ok=True)
         p = Path(f"{proj_zip_absolute_path}")
         p.mkdir(parents=True, exist_ok=True)
         p = Path(f"{dataframe_absolute_path}")
+        p.mkdir(parents=True, exist_ok=True)
+        p = Path(f"{csv_absolute_path}")
+        p.mkdir(parents=True, exist_ok=True)
+        p = Path(f"{latex_absolute_path}")
         p.mkdir(parents=True, exist_ok=True)
 
 
@@ -214,7 +230,7 @@ if __name__ == "__main__":
             capture_end_time = time.time()
             capture_time = capture_end_time - capture_start_time
         else:
-            current_project = cw.open_project(f"{proj_absolute_path}")
+            current_project = cw.open_project(f"{proj_absolute_path}{proj_name}")
 
         if (globals.enable_analysis is True):
             # Retrieve the reference secret key
