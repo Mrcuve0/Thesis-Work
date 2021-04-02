@@ -141,4 +141,11 @@ cython_debug/
 # Other files
 Lab3_3.py
 .directory
-zip-projects
+projects/traces_100/AES_SBOX/AES_SBOX_data/*
+projects/traces_100/Freyre_SBOX_1/Freyre_SBOX_1_data/*
+projects/traces_100/Freyre_SBOX_2/Freyre_SBOX_2_data/*
+projects/traces_100/Freyre_SBOX_3/Freyre_SBOX_3_data/*
+projects/traces_100/AES_SBOX/zips/*
+projects/traces_100/Freyre_SBOX_1/zips/*
+projects/traces_100/Freyre_SBOX_2/zips/*
+projects/traces_100/Freyre_SBOX_3/zips/*
