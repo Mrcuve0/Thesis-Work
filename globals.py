@@ -11,7 +11,7 @@ from random import sample
 #                                         
 #                                         
 
-enable_capture = False
+enable_capture  = False
 enable_autosave = False
 enable_analysis = True
 
@@ -71,6 +71,8 @@ class ThesisProject(IntEnum):
     FREYRE_SBOX_1 = 1
     FREYRE_SBOX_2 = 2
     FREYRE_SBOX_3 = 3
+    HUSSAIN_SBOX_6 = 4
+    OZKAYNAK_SBOX_1 = 5
 
 # sample_GLOBAL_range_min = 0
 # sample_GLOBAL_range_max = cw_scope_adc_samples
