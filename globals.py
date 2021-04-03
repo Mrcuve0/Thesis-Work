@@ -61,10 +61,12 @@ cw_target_fw_hex = f"simpleserial-aes-{cw_platform}.hex"
 num_bits = 8
 num_keys = pow(2, num_bits)
 num_bytes = 16
-num_traces = 100
-num_callback_traces = 10
+
+num_traces = 5000
+num_callback_traces = num_traces//10
 num_df_head = 10
 
+x_axis = list(range(0, num_callback_traces+num_traces, num_callback_traces))
 
 class ThesisProject(IntEnum):
     AES_SBOX = 0
