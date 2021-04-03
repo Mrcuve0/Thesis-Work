@@ -95,6 +95,7 @@ def stats_callback() -> None:
     """Callback function, called each num_callback_traces to plot intermediate results"""
     global callback_trace_current_num
     global key
+    global correlations_in_time
 
     # Let's retrieve the attack results obtained up to now
     results = attack.results
@@ -135,8 +136,8 @@ def stats_callback() -> None:
     # Save Files
     with open(f"{dataframe_absolute_path}/dataframe_traces[{callback_trace_current_num} of {globals.num_traces}].html", 'w') as f:
         f.write(df_styled.render())
-    df.head(globals.num_df_head).to_latex(f"{latex_absolute_path}/table_traces[{callback_trace_current_num} of {globals.num_traces}]");
-    df.head(globals.num_df_head).to_csv(f"{csv_absolute_path}/csv_traces[{callback_trace_current_num} of {globals.num_traces}]");
+    df.head(globals.num_df_head).to_latex(f"{latex_absolute_path}/table_traces[{callback_trace_current_num} of {globals.num_traces}].tex");
+    df.head(globals.num_df_head).to_csv(f"{csv_absolute_path}/csv_traces[{callback_trace_current_num} of {globals.num_traces}].csv");
 
     callback_trace_current_num += globals.num_callback_traces
 
@@ -151,17 +152,54 @@ def plot_pge(plot_data) -> None:
     plt.grid(b=True, which='major', axis='both', alpha=0.2)
     
     for i, bnum in enumerate(key):
-        plt.plot(pges[i][0], pges[i][1], label=f"Byte #{i} | Key: 0x{bnum:02X}")
-        
-    plt.legend(title=f"Key Bytes")
-    plt.title(f"{proj_name} - PGE")
+        plt.plot(pges[i][0], pges[i][1], linewidth=2, label=f"Byte #{i} | Key: 0x{bnum:02X}")
 
-    ax1.set_ylabel('Partial Guessing Entropy (PGE)')
-    ax1.set_xlabel('Traces')
+    plt.plot(pges[i][0], [10 for _ in range(len(pges[i][0]))], linewidth=2, color="red", label=f"max(PGE) < 10")
+        
+    plt.legend(title=f"Key Bytes", fontsize=12)
+    plt.title(f"{proj_name} - PGE", fontsize=18)
+
+    ax1.set_xticks(globals.x_axis)
+    ax1.set_ylabel('Partial Guessing Entropy (PGE)', fontsize=16)
+    ax1.set_xlabel('Traces', fontsize=16)
 
     # plt.show()
     plt.savefig(f"{plots_absolute_path}/PGE.png")
 
+
+def plot_correlation(plot_data) -> None:
+    """Plots the various correlations of both the correct key guesses and the wrong ones"""
+    global key
+
+    fig, ax1 = plt.subplots(nrows=1, ncols=1, sharex=True, figsize=[18,12])
+    plt.grid(b=True, which='major', axis='both', alpha=0.2)
+
+    # Plot the wrong key_guesses
+    decimator = 0
+    for i, bnum in enumerate(key):
+        corrs = plot_data.corr_vs_trace(i)
+        for j in range(0, 256):
+            decimator += 1
+            if (j != bnum):
+                if (decimator % 20 == 0):
+                    plt.plot(corrs[0], corrs[1][j], color="#5c616c")
+                    
+    # Now plot the corect key_guesses on top of the wrong ones
+    for i, bnum in enumerate(key):
+        corrs = plot_data.corr_vs_trace(i)
+        for j in range(0, 256):
+            if (j == bnum):
+                plt.plot(corrs[0], corrs[1][j], linewidth=2, label=f"Byte #{i} | Key: 0x{bnum:02X}")
+
+    plt.legend(title=f"Key Bytes", fontsize=12)
+    plt.title(f"{proj_name} - Correlations", fontsize=18)
+
+    ax1.set_xticks(globals.x_axis)
+    ax1.set_ylabel('Correlation', fontsize=16)
+    ax1.set_xlabel('Traces', fontsize=16)
+    
+    # plt.show()
+    plt.savefig(f"{plots_absolute_path}/correlations.png")
 
 
 def print_time_results(script_time, capture_time) -> None:
@@ -283,7 +321,7 @@ if __name__ == "__main__":
 
             plot_data = cwa.analyzer_plots(results)
             plot_pge(plot_data)
-
+            plot_correlation(plot_data)
         else:
             pass
 
