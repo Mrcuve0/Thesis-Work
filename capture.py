@@ -95,7 +95,6 @@ def stats_callback() -> None:
     """Callback function, called each num_callback_traces to plot intermediate results"""
     global callback_trace_current_num
     global key
-    global correlations_in_time
 
     # Let's retrieve the attack results obtained up to now
     results = attack.results
