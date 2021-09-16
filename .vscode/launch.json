@@ -8,7 +8,7 @@
             "name": "Python: capture.py",
             "type": "python",
             "request": "launch",
-            "program": "/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/00-Notes/Thesis-Work/capture.py",
+            "program": "/home/sem/Syncthing/CINI/01-SCA-Research/03-Paper/99-Workspace/capture.py",
             "console": "integratedTerminal"
         }
     ]

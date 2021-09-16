@@ -1,3 +1,5 @@
 {
-    "cSpell.enabled": false
+    "cSpell.enabled": false,
+    "python.pythonPath": "/home/sem/Syncthing/CINI/01-SCA-Research/03-Paper/99-Workspace/env/bin/python3",
+    "git.ignoreLimitWarning": true
 }
