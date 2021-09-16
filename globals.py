@@ -11,9 +11,10 @@ from random import sample
 #                                         
 #                                         
 
+# Dummy default vars, set them inside capture.py script
 enable_capture  = False
 enable_autosave = False
-enable_analysis = True
+enable_analysis = False
 
 #    _______          __
 #   / ____\ \        / /
@@ -31,24 +32,6 @@ cw_scope_adc_samples = 5000
 cw_target_fw_absolute_path = "/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/ChipWhisperer_Projects/chipwhisperer/hardware/victims/firmware/simpleserial-aes/"
 cw_target_fw_hex = f"simpleserial-aes-{cw_platform}.hex"
 
-#            ______  _____ 
-#      /\   |  ____|/ ____|
-#     /  \  | |__  | (___  
-#    / /\ \ |  __|  \___ \ 
-#   / ____ \| |____ ____) |
-#  /_/    \_\______|_____/ 
-#                          
-#                          
-
-# known_key = [0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c]
-
-# def aes_internal(key, input_byte) -> int:
-#     """
-#     Theoretical model representing the AddRoundKey and SubBytes AES operations
-#     """
-#     return sbox[key ^ input_byte]
-
-
 #   _____  _____   ____       _ ______ _____ _______ 
 #  |  __ \|  __ \ / __ \     | |  ____/ ____|__   __|
 #  | |__) | |__) | |  | |    | | |__ | |       | |   
@@ -58,13 +41,18 @@ cw_target_fw_hex = f"simpleserial-aes-{cw_platform}.hex"
 #                                                    
 #                                                    
 
+multiproc = True
+
+test_iterations = 20
+iterations_offset = 0
+
+num_traces = 50
+num_callback_traces = num_traces//10
+num_df_head = 10
+pge_threshold = 4
 num_bits = 8
 num_keys = pow(2, num_bits)
 num_bytes = 16
-
-num_traces = 5000
-num_callback_traces = num_traces//10
-num_df_head = 10
 
 x_axis = list(range(0, num_callback_traces+num_traces, num_callback_traces))
 
@@ -76,13 +64,6 @@ class ThesisProject(IntEnum):
     HUSSAIN_SBOX_6 = 4
     OZKAYNAK_SBOX_1 = 5
 
-# sample_GLOBAL_range_min = 0
-# sample_GLOBAL_range_max = cw_scope_adc_samples
-# sample_LOCAL_range_min = 1290
-# sample_LOCAL_range_stride = 60
-# sample_LOCAL_range_max = sample_LOCAL_range_min + sample_LOCAL_range_stride
-
-
 def print_globals_config():
     """
     Print a summary of the global script configuration (you an adjust the parameters by modifying
@@ -90,19 +71,18 @@ def print_globals_config():
     """
     print(f"\n")
     print(f" --- Globals Config ---")
+    print(f"\t --> enable_capture:\t{enable_capture}")
+    print(f"\t --> enable_autosave:\t{enable_autosave}")
+    print(f"\t --> enable_analysis:\t{enable_analysis}")
+    print(f"\t --> multiproc:\t{multiproc}")
     print(f"\t --> num_bits:\t{num_bits}")
     print(f"\t --> num_bytes:\t{num_bytes}")
     print(f"\t --> num_keys:\t{num_keys}")
     print(f"\t --> num_traces:{num_traces}")
     print(f"\t --> num_callback_traces:{num_callback_traces}")
-    # print(f"\t --> Sbox:\t{sbox_selected}")
-    # print(f"\t --> Ongoing Project:\t{proj_name}")
-    # print(f"\t --> leak_position:\t{leak_position}")
-    # print(f"\t --> sample_GLOBAL_range_min:\t{sample_GLOBAL_range_min}")
-    # print(f"\t --> sample_GLOBAL_range_max:\t{sample_GLOBAL_range_max}")
-    # print(f"\t --> sample_LOCAL_range_min:\t{sample_LOCAL_range_min}")
-    # print(f"\t --> sample_LOCAL_range_stride:\t{sample_LOCAL_range_stride}")
-    # print(f"\t --> sample_LOCAL_range_max:\t{sample_LOCAL_range_max}")
+    print(f"\t --> num_df_head:\t{num_df_head}")
+    print(f"\t --> pge_threshold:\t{pge_threshold}")
+    print(f" --- Globals Config ---")
     print(f"\n")
 
 
