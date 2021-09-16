@@ -21,11 +21,13 @@ def cw_init() -> tuple:
     # target = None
     # prog = None
 
-    try:
-        if not scope.connectStatus:
-            scope.con()
-    except NameError:
-        scope = cw.scope()
+    # try:
+    #     if not scope.connectStatus:
+    #         scope.con()
+    # except NameError:
+    #     scope = cw.scope()
+
+    scope = cw.scope()
     
     try:
         target = cw.target(scope)
@@ -68,8 +70,9 @@ def reset_target(scope) -> None:
 
 
 def compile_target(sbox_num) -> None:
-    """Program the CW target code"""
-
+    """
+    Program the CW target code
+    """
     try:
         res = subprocess.call("make SBOX_SEL=SBOX_SEL=" + str(sbox_num) + " PLATFORM=" + str(globals.cw_platform) + " CRYPTO_TARGET=" + str(globals.cw_cryptotarget) + " -C \""+str(globals.cw_target_fw_absolute_path)+"\"", shell=True)
         print(res)
@@ -83,11 +86,16 @@ def compile_target(sbox_num) -> None:
 
 
 def program_target(scope, prog) -> None:
-    """Program the CW target"""
+    """
+    Program the CW target
+    """
     cw.program_target(scope, prog, globals.cw_target_fw_absolute_path + globals.cw_target_fw_hex)
 
 
 def disconnect(scope, target) -> None:
+    """
+    Disconnect both the CW Scope and the CW Target Board
+    """
     target.dis()
     scope.dis()
 
