@@ -300,66 +300,6 @@ def plot_avg_pge(iterations_data, key) -> None:
     plt.close(fig)
 
 
-# def plot_avg_correlation(iterations_data, key) -> None:
-#     """
-#     Plots the average correlations of both the correct key guesses and the wrong ones
-#     """
-
-#     fig, ax1 = plt.subplots(nrows=1, ncols=1, sharex=True, figsize=[18,12])
-#     plt.grid(b=True, which='major', axis='both', alpha=0.2)
-
-#     # Collect all the wrong key_guesses trace (w/ decimation)
-#     decimator = 0
-
-#     x_axis = iterations_data[0].corr_vs_trace(0)[0]
-
-#     # for sbox_i, sbox_data in enumerate(sboxes_data):
-#     for i, bnum in enumerate(key):
-#         for j in range(0, 256):
-#             decimator += 1
-#             if (j != bnum and decimator % 10 == 0):
-#                 nonkey_corr_traces_summary = [[],[]]
-#                 corrs_traces = []
-#                 for sbox_iteration, plot_data in enumerate(iterations_data):
-#                     corrs = plot_data.corr_vs_trace(i)
-#                     # Isolate the correlation trace for the given WRONG subkey candidate in the given iteration
-#                     corrs_traces.append(corrs[1][j])
-#                 # Compute the mean and std_dev for the given WRONG subkey candidate considered ALL possible iterations
-#                 nonkey_corr_traces_summary[0] = np.mean(corrs_traces, 0)
-#                 nonkey_corr_traces_summary[1] = np.std(corrs_traces, 0)
-#                 # nonkeys_summaries[i].append(nonkey_corr_traces_summary)
-#                 plt.plot(x_axis, nonkey_corr_traces_summary[0], color="#73757a")
-
-#     # Now plot the corect key_guesses on top of the wrong ones
-#     for i, bnum in enumerate(key):
-#         for j in range(0, 256):
-#             if (j == bnum):
-#                 key_corr_traces_summary = [[],[]]
-#                 corrs_traces = []
-#                 for sbox_iteration, plot_data in enumerate(iterations_data):
-#                     corrs = plot_data.corr_vs_trace(i)
-#                     # Isolate the correlation trace for the given CORRECT subkey candidate in the given iteration
-#                     corrs_traces.append(corrs[1][j])
-#                 # Compute the mean and std_dev for the given CORRECT subkey candidate considered ALL possible iterations
-#                 key_corr_traces_summary[0] = np.mean(corrs_traces, 0)
-#                 key_corr_traces_summary[1] = np.std(corrs_traces, 0)
-#                 # plt.plot(x_axis, key_corr_traces_summary[0], linewidth=3, label=f"Byte #{i} | Key: 0x{bnum:02X}")
-#                 plt.plot(x_axis, key_corr_traces_summary[0], linewidth=3, label=f"Byte #{i}")
-#                 ax1.fill_between(x_axis, key_corr_traces_summary[0] + key_corr_traces_summary[1], key_corr_traces_summary[0] - key_corr_traces_summary[1], alpha=0.1)
-
-
-#     plt.legend(title=f"Known Key", fontsize=12, loc="lower left")
-#     plt.title(f"{proj_name} - Average Correlations (on {globals.test_iterations} iterations)", fontsize=18)
-
-#     ax1.set_xticks(globals.x_axis)
-#     ax1.set_ylabel('Average Correlation', fontsize=16)
-#     ax1.set_xlabel('Traces', fontsize=16)
-    
-#     # plt.show()
-#     plt.savefig(f"{proj_absolute_path}/{plots_folder_name}/avg_correlations.png")
-#     plt.close(fig)
-
-
 def plot_avg_correlation(iterations_data, key) -> None:
     """
     Plots the average correlations of both the correct key guesses and the wrong ones so to visually compute the MTD (Minimum Traces to Disclosure) metric
@@ -395,36 +335,6 @@ def plot_avg_correlation(iterations_data, key) -> None:
                     ax1.plot(x_axis, nonkey_corr_traces_summary[0], color="#73757a")
                 line_wrong, = ax1_mtd.plot(x_axis, nonkey_corr_traces_summary[0], color="#00e5f0", label=f"Incorrect Keys")
 
-
-
-
-            # if (j != bnum and decimator % 10 == 0):
-            #     corrs_traces = []
-            #     nonkey_corr_traces_summary = [[],[]] 
-            #     for sbox_iteration, plot_data in enumerate(iterations_data):
-            #         corrs = plot_data.corr_vs_trace(i)
-            #         # Isolate the correlation trace for the given WRONG subkey candidate in the given iteration
-            #         corrs_traces.append(corrs[1][j])
-            #     # Compute the mean and std_dev for the given WRONG subkey candidate considered ALL possible iterations
-            #     nonkey_corr_traces_summary[0] = np.mean(corrs_traces, 0)
-            #     nonkey_corr_traces_summary[1] = np.std(corrs_traces, 0)
-
-            #     # nonkeys_summaries[i].append(nonkey_corr_traces_summary)
-            #     ax1.plot(x_axis, nonkey_corr_traces_summary[0], color="#73757a")
-
-            # if (j != bnum):
-            #     corrs_traces = []
-            #     nonkey_corr_traces_summary = [[],[]] 
-            #     for sbox_iteration, plot_data in enumerate(iterations_data):
-            #         corrs = plot_data.corr_vs_trace(i)
-            #         # Isolate the correlation trace for the given WRONG subkey candidate in the given iteration
-            #         corrs_traces.append(corrs[1][j])
-            #     # Compute the mean and std_dev for the given WRONG subkey candidate considered ALL possible iterations
-            #     nonkey_corr_traces_summary[0] = np.mean(corrs_traces, 0)
-
-            #     line_wrong, = ax1_mtd.plot(x_axis, nonkey_corr_traces_summary[0], color="#00e5f0", label=f"Incorrect Keys")
-
-
     # Now plot the corect key_guesses on top of the wrong ones
     key_corr_traces_mtd = []
     for i, bnum in enumerate(key):
@@ -446,9 +356,6 @@ def plot_avg_correlation(iterations_data, key) -> None:
                 ax1.fill_between(x_axis, key_corr_traces_summary[0] + key_corr_traces_summary[1], key_corr_traces_summary[0] - key_corr_traces_summary[1], alpha=0.1)
                 
     key_mtd = np.mean(key_corr_traces_mtd, 0)
-    # print(f"key_corr_traces_mtd: {key_corr_traces_mtd}")
-    # print(f"key_corr_traces_mtd[0]: {key_corr_traces_mtd[0]}")
-    # print(f"key_mtd: {key_mtd}")
 
     line_key, = ax1_mtd.plot(x_axis, key_mtd, color="#ff0000", linewidth=3, label=f"Correct Key")
 
@@ -559,11 +466,15 @@ if __name__ == "__main__":
 
     # Num of traces to capture
     traces = [
-        # 50, 
-        100, 
-        200,
-        300, 
-        500, 
+        # 20,
+        # 30,
+        # 40,
+        # 50,
+        80, 
+        # 100, 
+        # 200,
+        # 300, 
+        # 500, 
         # 1000, 
         # 5000,
         # 10_000
